@@ -113,6 +113,21 @@ function prove {
   command prove "${args[@]}" "$@"
 }
 
+function perl-version {
+  local index="$($MODERN_PERL -0777 -MCPAN::Meta::YAML -e'
+    my $stage = shift;
+    my $cmds = CPAN::Meta::YAML->read_string(scalar <>)->[0]->{$stage};
+    for (0..$#$cmds) {
+      print(($_+1)."\n")
+        if $cmds->[$_] eq "perl-version";
+  }' before_install < "$TRAVIS_BUILD_DIR/.travis.yml")"
+  travis_time_finish
+  travis_fold end "before_install.$index"
+  perl -V
+  travis_fold start "before_install.$index"
+  travis_time_start
+}
+
 echo "Perl Travis Helpers: $(git --git-dir="$HELPER_ROOT/.git" describe --all --long HEAD)"
 
 # vim: ft=sh
